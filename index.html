@@ -10,7 +10,7 @@
     <script src="js/jquery.tinysort.min.js"></script>
     <script src="js/moment.min.js"></script>
     <script src="js/system2region.json.js"></script>
-    <title>timerboard.net</title>
+    <title>Wicked Creek Timerboard</title>
 
 </head>
 <body>
@@ -25,7 +25,7 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="/"><i class="fa fa-calendar"></i> timerboard.net
+            <a class="navbar-brand" href="/"><i class="fa fa-calendar"></i> campaignboard.mine.nu - Jump distance from U-HVIX
             </a></div>
         <nav class="collapse navbar-collapse navbar-ex1-collapse" role="navigtion">
         </nav>
@@ -49,6 +49,7 @@
             <th><a href="#" onClick='sort("type");'>Type<span style="float:right;" id="type"></span></a></th>
             <th><a href="#" onClick='sort("system");'>System<span style="float:right;" id="system"></span></a></th>
             <th><a href="#" onClick='sort("region");'>Region<span style="float:right;" id="region"></span></a></th>
+            <th><a href="#" onClick='sort("jumps");'>Jumps<span style="float:right;" id="jumps"></span></a></th>
             <th><a href="#" onClick='sort("owner");'>Owner<span style="float:right;" id="owner"></span></a></th>
             <th><a href="#" onClick='sort("time");'>Time<span style="float:right;" id="time"></span></a></th>
             <th><a href="#" onClick='sort("time");'>Remaining<span style="float:right;" id="remaining"></span></a></th>
@@ -64,6 +65,7 @@
             <td class="type">{{ type }}</td>
             <td class="system"><a href="http://evemaps.dotlan.net/search?q={{ system }}">{{ system }}</a></td>
             <td class="region">{{ region }}</td>
+            <td class="jumps">{{ jumps }}</td>
             <td class="owner"><a href="http://evemaps.dotlan.net/search?q={{ owner }}">{{ owner }}</a></td>
             <td class="time">{{ time }}</td>
             <td class="remaining" style="width: 150px;"><span id="remaining.{{ id }}" style="font-family: monospace;"></span></td>
@@ -125,28 +127,23 @@
             4: "Freeport"
         };
 
-        // new stuff
-        websocket = new WebSocket("wss://api.pizza.moe/stream/sovereignty/campaigns/");
-        websocket.onopen = function(evt) {  };
-        websocket.onclose = function(evt) {  };
-        websocket.onmessage = function(evt) {
-            var event = JSON.parse(evt["data"]);
-            $.each(event["items"], function(i, e) {
+        // Change to get data from a regular JSON file rather than a WebSocket service
+var xmlhttp = new XMLHttpRequest();
+var url = "/campaigns.json";
+
+        processCampaignData = function(evt) {
+            
+            $.each(evt["items"], function(i, e) {
                 var timer = {
                     type: typeLookup[e["eventType"]],
-                    system: e["sourceSolarsystem"]["name"],
-                    region: system2region[e["sourceSolarsystem"]["name"]],
+                    system: e["sourceSolarsystemName"],
+                    region: system2region[e["sourceSolarsystemName"]],
+                    jumps: e["jumps"],
                     time: e["startTime"],
                     realtime: moment(e["startTime"]),
-                    owner: "None",
-                    id: e["sourceSolarsystem"]["name"]+e["startTime"]
+                    owner: e["owner"],
+                    id: e["sourceSolarsystemName"]+e["startTime"]
                 };
-                try {
-                    timer["owner"] = e["defender"]["defender"]["name"];
-                }
-                catch (err) {
-
-                }
                 console.log(timer["id"]);
                 if (!(timer["id"] in timers)) {
                     timer_to_row(0, timer);
@@ -155,17 +152,27 @@
                 };
             });
         };
-        websocket.onerror = function(evt) {  };
 
 
-        sort("time");
+xmlhttp.onreadystatechange = function() {
+    if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+        var myArr = JSON.parse(xmlhttp.responseText);
+        processCampaignData(myArr);
+    }
+}
+xmlhttp.open("GET", url, true);
+xmlhttp.send();
+
+        // I'm sure there is an easier way to do this...
+        sort("jumps");
+        sort("jumps");
     </script>
 
         </div>
         <hr />
         <footer>
             <div class="container">
-                <p class=".small text-center text-muted">This site is a deployment of <a href="https://github.com/xxpizzaxx/timerboard-net-fozziesov">timerboard-net-fozziesov</a>, fed by data from <a href="https://github.com/xxpizzaxx/pizza-sov-relay">pizza-sov-relay</a> which are both available under the <a href="http://opensource.org/licenses/MIT">MIT License</a>.</p>
+                <p class=".small text-center text-muted">This site is a deployment of <a href="https://github.com/craigcalef/test-campaign-timerboard">test-campaign-timerboard</a>, a fork of <a href="https://github.com/xxpizzaxx/timerboard-net-fozziesov">timerboard-net-fozziesov</a> which are both available under the <a href="http://opensource.org/licenses/MIT">MIT License</a>.</p>
             </div>
         </footer>
     </body>
