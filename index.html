@@ -25,7 +25,7 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="/"><i class="fa fa-calendar"></i> campaignboard.mine.nu - Jump distance from U-HVIX
+            <a class="navbar-brand" href="/"><img src="mmd.png"> campaignboard.mine.nu - Gates from U-HVIX
             </a></div>
         <nav class="collapse navbar-collapse navbar-ex1-collapse" role="navigtion">
         </nav>
@@ -140,7 +140,7 @@ var url = "/campaigns.json";
                     region: system2region[e["sourceSolarsystemName"]],
                     jumps: e["jumps"],
                     time: e["startTime"],
-                    realtime: moment(e["startTime"]),
+                    realtime: moment.utc(e["startTime"]),
                     owner: e["owner"],
                     id: e["sourceSolarsystemName"]+e["startTime"]
                 };
